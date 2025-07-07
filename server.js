@@ -18,9 +18,10 @@ app.get('/proxy/ts', async (req, res) => {
                 'User-Agent': 'Mozilla/5.0'
             }
         });
-        res.setHeader('Content-Type', response.headers['content-type']);
+        res.setHeader('Content-Type', response.headers['content-type'] || 'application/octet-stream');
         response.data.pipe(res);
     } catch (error) {
+        console.error('TS segment proxy hatası:', error.message);
         res.status(500).send('Segment alınamadı');
     }
 });
@@ -35,6 +36,8 @@ app.get('/m3u8/:id', async (req, res) => {
             validateStatus: status => status >= 200 && status < 400,
             headers: { 'User-Agent': 'Mozilla/5.0' }
         });
+        console.log('Redirect headers:', redirectResponse.headers);
+
         const realUrl = redirectResponse.headers.location;
         if (!realUrl) throw new Error("Yönlendirme bulunamadı");
 
@@ -52,6 +55,7 @@ app.get('/m3u8/:id', async (req, res) => {
         res.setHeader('Content-Type', 'application/vnd.apple.mpegurl');
         res.send(proxied);
     } catch (err) {
+        console.error('M3U8 işleme hatası:', err.message);
         res.status(500).send('M3U8 işlenemedi');
     }
 });
