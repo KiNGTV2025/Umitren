@@ -33,8 +33,6 @@ app.get('/m3u8/:id', async (req, res) => {
 
     try {
         const redirectResponse = await axios.get(playUrl, {
-            maxRedirects: 0,
-            validateStatus: status => status >= 200 && status < 400,
             headers: {
                 'User-Agent': 'Mozilla/5.0',
                 'Referer': 'https://vavoo.to/',
@@ -42,8 +40,10 @@ app.get('/m3u8/:id', async (req, res) => {
             }
         });
 
-        const realUrl = redirectResponse.headers.location;
+        const realUrl = redirectResponse.request.res.responseUrl || redirectResponse.headers.location;
         if (!realUrl) throw new Error("Yönlendirme bulunamadı");
+
+        console.log('Redirect URL:', realUrl);
 
         const m3u8Response = await axios.get(realUrl, {
             headers: {
